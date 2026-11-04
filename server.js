@@ -2,6 +2,15 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
+// Enable CORS for Android APK
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
+});
+
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
