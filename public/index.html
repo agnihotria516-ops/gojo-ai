@@ -63,12 +63,24 @@ button,input{font:inherit}.app{max-width:980px;margin:auto;padding:20px 16px 34p
  function add(text,who){const el=document.createElement("div");el.className="msg "+who;const label=document.createElement("span");label.className="who";label.textContent=who==="user"?"YOU":"GOJO";el.append(label,document.createTextNode(text));messages.append(el);messages.scrollTop=messages.scrollHeight}
  function stopSpeech(){if("speechSynthesis"in window)window.speechSynthesis.cancel();speaking=false}
  function speak(text){
-text = text.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\uFE0F\u200D\u20E3]/gu, "").replace(/\s+/g, " ").trim();
-if(!$("speak").checked||!("speechSynthesis"in window))return;stopSpeech();const u=new SpeechSynthesisUtterance(text);u.lang="en-IN";u.rate=1;u.pitch=1.08;const v=speechSynthesis.getVoices();alert(v.map(x=>x.name+" | "+x.lang).join(" / ")||"No voices loaded");u.voice=v.find(x=>/male|david|daniel|james|george/i.test(x.name)&&x.lang.startsWith("en"))||v.find(x=>x.lang==="en-IN")||v.find(x=>x.lang.startsWith("en"))||null;u.rate=0.96;u.pitch=0.82;u.onstart=()=>{speaking=true;status("Gojo is speaking…")};u.onend=()=>{speaking=false;if($("auto").checked&&!manualStop)startListening();else status("Ready when you are.")};u.onerror=()=>{speaking=false};speechSynthesis.speak(u)}
- async function ask(text){text=text.trim();if(!text||busy)return;busy=true;$("send").disabled=true;add(text,"user");question.value="";status("Gojo is thinking…");history.push({role:"user",content:text});try{const res=await fetch("https://gojo-ai-backend-qxij.onrender.com/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history.slice(-16)})});let data={};try{data=await res.json()}catch{}if(!res.ok)throw new Error(data.error||`Server error ${res.status}`);const answer=(data.reply||"I couldn't form a reply. Try again.").trim();history.push({role:"assistant",content:answer});add(answer,"bot");speak(answer);if(!speaking)status("Ready when you are.")}catch(e){const msg=e.message||"Could not reach the AI server.";add("I couldn't connect to the AI right now. "+msg,"bot");status("AI connection problem");}finally{busy=false;$("send").disabled=false}}
- form.addEventListener("submit",e=>{e.preventDefault();ask(question.value)});
- document.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>ask(b.dataset.q)));
- async function checkServer(){try{const r=await fetch("https://gojo-ai-backend-qxij.onrender.com/api/health");const d=await r.json();$("connection").textContent=d.configured?"AI SERVER ONLINE":"API KEY NEEDED";$("connection").style.color=d.configured?"#9ceaff":"#ffd18b";status(d.configured?"Connected. Ask me anything.":"Server is running; add GEMINI_API_KEY to enable AI.");}catch{$("connection").textContent="SERVER OFFLINE";status("Start the Node server using the setup guide.")}}
+  text = text.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\uFE0F\u200D\u20E3]/gu, "").replace(/\s+/g, " ").trim();
+  if(!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-IN";
+  u.rate = 1.0;
+  u.pitch = 1.0;
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    const selected = voices.find(x => /male|david|daniel|james|george/i.test(x.name) && x.lang.startsWith("en")) 
+                  || voices.find(x => x.lang.startsWith("en")) 
+                  || voices[0];
+    if (selected) u.voice = selected;
+  }
+  window.speechSynthesis.speak(u);
+}
+
+async function checkServer(){try{const r=await fetch("https://gojo-ai-backend-qxij.onrender.com/api/health");const d=await r.json();$("connection").textContent=d.configured?"AI SERVER ONLINE":"API KEY NEEDED";$("connection").style.color=d.configured?"#9ceaff":"#ffd18b";status(d.configured?"Connected. Ask me anything.":"Server is running; add GEMINI_API_KEY to enable AI.");}catch{$("connection").textContent="SERVER OFFLINE";status("Start the Node server using the setup guide.")}}
  function startListening(){if(!recognition){$("voiceHelp").textContent="Speech recognition is not supported here. Use the latest Chrome browser; text chat still works.";return}if(listening||busy)return;manualStop=false;try{recognition.start()}catch(e){$("voiceHelp").textContent="Couldn't start voice: "+e.message}}
  function stopAll(){manualStop=true;clearTimeout(restartTimer);if(recognition&&listening){try{recognition.stop()}catch{}}stopSpeech();listening=false;$("start").disabled=false;$("stop").disabled=true;status("Voice stopped.")}
  $("start").addEventListener("click",async()=>{if(!SR){$("voiceHelp").textContent="This browser doesn't support speech recognition. Try Chrome.";return}try{if(navigator.mediaDevices?.getUserMedia){const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop())}startListening()}catch(e){$("voiceHelp").textContent=e.name==="NotAllowedError"?"Microphone permission denied. Allow microphone access in Chrome site settings, then reload.":"Microphone error: "+e.message}});
