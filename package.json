@@ -1,0 +1,20 @@
+{
+  "name": "gojo-ai-voice-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gojo-inspired AI chatbot with text and browser voice controls",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "dotenv": "^18.0.9",
+    "express": "^4.22.3"
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Gojo AI</string>
+    <string name="title_activity_main">Gojo AI</string>
+    <string name="package_name">com.gojoai.app</string>
+    <string name="custom_url_scheme">com.gojoai.app</string>
+</resources>
