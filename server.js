@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
 app.use(express.json({ limit: "32kb" }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -53,10 +53,10 @@ app.post("/api/chat", async (req, res) => {
   };
 
   try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent?key=${encodeURIComponent(API_KEY)}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`;
     const upstream = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(30000)
     });
